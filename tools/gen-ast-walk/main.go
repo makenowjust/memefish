@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"sort"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -70,9 +71,7 @@ func main() {
 
 		output := false
 
-		for i := len(structDef.Fields) - 1; i >= 0; i-- {
-			field := structDef.Fields[i]
-
+		for _, field := range slices.Backward(structDef.Fields) {
 			if _, ok := extractNodeStructPointer(field.Type); ok {
 				fmt.Fprintf(&buffer, "\t\tstack = append(stack, &stackItem{node: wrapNode(n.%s), visitor: v.Field(%q)})\n", field.Name, field.Name)
 				output = true

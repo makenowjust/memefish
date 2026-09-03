@@ -150,7 +150,7 @@ func (v *Var) EvalNode(x any) node {
 		return nil
 	}
 
-	node, ok := field.Interface().(node)
+	node, ok := reflect.TypeAssert[node](field)
 	if !ok {
 		panic("cannot convert the value to an AST node")
 	}
@@ -181,7 +181,7 @@ func (v *Var) EvalNodeSlice(x any) []node {
 		}
 
 		var ok bool
-		nodes[i], ok = item.Interface().(node)
+		nodes[i], ok = reflect.TypeAssert[node](item)
 		if !ok {
 			panic("cannot convert the value to an AST node")
 		}

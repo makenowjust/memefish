@@ -2,6 +2,7 @@ package ast
 
 import (
 	"iter"
+	"slices"
 )
 
 //go:generate go run ../tools/gen-ast-walk/main.go -astfile ast.go -constfile ast_const.go -outfile walk_internal.go
@@ -43,8 +44,8 @@ func walkMain(stack []*stackItem) {
 
 		if last.nodes != nil {
 			v := last.visitor.VisitMany(last.nodes)
-			for i := len(last.nodes) - 1; i >= 0; i-- {
-				stack = append(stack, &stackItem{node: last.nodes[i], visitor: v.Index(i)})
+			for i, n := range slices.Backward(last.nodes) {
+				stack = append(stack, &stackItem{node: n, visitor: v.Index(i)})
 			}
 			continue
 		}
