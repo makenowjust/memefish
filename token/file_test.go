@@ -120,28 +120,28 @@ func TestPosition(t *testing.T) {
 	}
 }
 
-func TestPositionOutOfRange(t *testing.T) {
-	// Out-of-range pos/end must be clamped to the buffer length instead of
-	// panicking (e.g. an error span reaching past EOF on a truncated escape
-	// sequence like `"\0`).
+func TestPositionPastEOF(t *testing.T) {
+	// Positions at or past EOF must resolve into the last line instead of
+	// panicking. The lexer reports an escape sequence truncated by EOF
+	// (e.g. `"\0`) with an error span ending one past the buffer, at the
+	// missing character.
 	f := &File{FilePath: "test", Buffer: `"\0`}
 
 	for _, tc := range []struct {
 		pos, end           Pos
-		wantPos, wantEnd   Pos
 		line, column       int
 		endLine, endColumn int
 	}{
-		{pos: 1, end: 4, wantPos: 1, wantEnd: 3, line: 0, column: 1, endLine: 0, endColumn: 3},
-		{pos: 100, end: 200, wantPos: 3, wantEnd: 3, line: 0, column: 3, endLine: 0, endColumn: 3},
+		{pos: 1, end: 4, line: 0, column: 1, endLine: 0, endColumn: 4},
+		{pos: 3, end: 4, line: 0, column: 3, endLine: 0, endColumn: 4},
 	} {
 		pos := f.Position(tc.pos, tc.end)
 
-		if tc.wantPos != pos.Pos {
-			t.Errorf("Pos: %d (want) != %d (got)", tc.wantPos, pos.Pos)
+		if tc.pos != pos.Pos {
+			t.Errorf("Pos: %d (want) != %d (got)", tc.pos, pos.Pos)
 		}
-		if tc.wantEnd != pos.End {
-			t.Errorf("End: %d (want) != %d (got)", tc.wantEnd, pos.End)
+		if tc.end != pos.End {
+			t.Errorf("End: %d (want) != %d (got)", tc.end, pos.End)
 		}
 		if tc.line != pos.Line {
 			t.Errorf("Line: %d (want) != %d (got)", tc.line, pos.Line)

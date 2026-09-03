@@ -46,14 +46,7 @@ type File struct {
 }
 
 // Position returns a new Position from pos and end on this File.
-//
-// pos and end greater than the buffer length are clamped to it, so an
-// out-of-range span (e.g. an error span reaching past EOF) is reported
-// as ending at EOF instead of panicking.
 func (f *File) Position(pos, end Pos) *Position {
-	pos = min(pos, Pos(len(f.Buffer)))
-	end = min(end, Pos(len(f.Buffer)))
-
 	line, column := f.ResolvePos(pos)
 	endLine, endColumn := f.ResolvePos(end)
 
@@ -98,8 +91,13 @@ func (f *File) ResolvePos(pos Pos) (line int, column int) {
 	}
 
 	f.init()
+	// The last entry of f.lines is a sentinel (one past the virtual newline
+	// terminating the last line), not a line start. Skipping it here makes
+	// positions at or past EOF resolve into the last line, so an error span
+	// pointing just after the buffer (e.g. a truncated escape sequence) still
+	// gets a valid line and column.
 	// TODO: for performance, use binary search instead
-	for line = len(f.lines) - 1; line >= 0; line-- {
+	for line = len(f.lines) - 2; line >= 0; line-- {
 		linePos := f.lines[line]
 		if linePos <= pos {
 			column = int(pos - linePos)
