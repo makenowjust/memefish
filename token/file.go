@@ -91,13 +91,8 @@ func (f *File) ResolvePos(pos Pos) (line int, column int) {
 	}
 
 	f.init()
-	// The last entry of f.lines is a sentinel (one past the virtual newline
-	// terminating the last line), not a line start. Skipping it here makes
-	// positions at or past EOF resolve into the last line, so an error span
-	// pointing just after the buffer (e.g. a truncated escape sequence) still
-	// gets a valid line and column.
 	// TODO: for performance, use binary search instead
-	for line = len(f.lines) - 2; line >= 0; line-- {
+	for line = len(f.lines) - 1; line >= 0; line-- {
 		linePos := f.lines[line]
 		if linePos <= pos {
 			column = int(pos - linePos)
