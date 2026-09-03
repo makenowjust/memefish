@@ -46,7 +46,14 @@ type File struct {
 }
 
 // Position returns a new Position from pos and end on this File.
+//
+// pos and end greater than the buffer length are clamped to it, so an
+// out-of-range span (e.g. an error span reaching past EOF) is reported
+// as ending at EOF instead of panicking.
 func (f *File) Position(pos, end Pos) *Position {
+	pos = min(pos, Pos(len(f.Buffer)))
+	end = min(end, Pos(len(f.Buffer)))
+
 	line, column := f.ResolvePos(pos)
 	endLine, endColumn := f.ResolvePos(end)
 

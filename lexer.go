@@ -461,6 +461,7 @@ func (l *Lexer) consumeQuotedContent(q string, raw, unicode bool, name string, n
 	var content []byte
 	hasError := false
 
+scan:
 	for l.peekOk(i) {
 		if l.slice(i, i+len(q)) == q {
 			if len(content) == 0 && name == "identifier" {
@@ -519,7 +520,7 @@ func (l *Lexer) consumeQuotedContent(q string, raw, unicode bool, name string, n
 					if !l.peekOk(i+j) || !char.IsHexDigit(l.peek(i+j)) {
 						if noPanic {
 							hasError = true
-							continue
+							continue scan
 						}
 						l.panicfAtPosition(token.Pos(l.pos+i-2), token.Pos(l.pos+i+j+1), "invalid escape sequence: hex escape sequence must be follwed by 2 hex digits")
 					}
@@ -550,7 +551,7 @@ func (l *Lexer) consumeQuotedContent(q string, raw, unicode bool, name string, n
 					if !l.peekOk(i+j) || !char.IsHexDigit(l.peek(i+j)) {
 						if noPanic {
 							hasError = true
-							continue
+							continue scan
 						}
 						l.panicfAtPosition(token.Pos(l.pos+i-2), token.Pos(l.pos+i+j+1), "invalid escape sequence: \\%c must be followed by %d hex digits", c, size)
 					}
@@ -579,7 +580,7 @@ func (l *Lexer) consumeQuotedContent(q string, raw, unicode bool, name string, n
 					if !l.peekOk(i+j) || !char.IsOctalDigit(l.peek(i+j)) {
 						if noPanic {
 							hasError = true
-							continue
+							continue scan
 						}
 						l.panicfAtPosition(token.Pos(l.pos+i-2), token.Pos(l.pos+i+j+1), "invalid escape sequence: octal escape sequence must be follwed by 3 octal digits")
 					}
