@@ -126,7 +126,7 @@ func main() {
 			value = value.Elem().FieldByName(name)
 		}
 
-		if n, ok := value.Interface().(ast.Node); ok {
+		if n, ok := reflect.TypeAssert[ast.Node](value); ok {
 			node = n
 		} else {
 			log.Fatalf("invalid value: %#v", value)
